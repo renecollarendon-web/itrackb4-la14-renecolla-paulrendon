@@ -1,10 +1,13 @@
 # ITRACKB4 - LA13
 
-J1: Why did your search not work on page 2, and what fixed it?**
-The search term was lost because the pagination links only generated the `?page=` parameter and forgot the `?search=` parameter. I fixed it by adding `->withQueryString()` to the paginator in the controller, which keeps all current GET parameters in the pagination links.
+J1: Your HomeController is not a resource controller. Name two things an index() on a resource controller does that yours does not have to.**
 
-J2: What is the difference between `request()->is('movies*')` and `request()->routeIs('movies.*')`?**
-`is()` checks the URL path, so it relies on text matching, which can break if URLs change. `routeIs()` checks the route name assigned in `web.php`, so it is much more stable and reliable for highlighting active navigation links.
+The `index()` in my MovieController has to read the search, genre, featured and sort values from the request and use them to filter the movies. It also has to load the movies together with their genre and split them into pages with `paginate()`. My HomeController only shows the front page and the two counts, so it does none of these things.
 
-J3: Why did you put the search in a GET form instead of POST?**
-A GET form puts the search values in the URL, allowing the visitor to bookmark the search result or share the link with a classmate. A POST form is for changing data (like submitting a form), while a search is just asking a question to view data.
+J2: Your pagination links lost the search term until you added one method. Say what those links contained before, and what the controller therefore received.**
+
+Before the fix, the pagination links only contained `?page=2` and nothing else, so the search term was missing. When I clicked page 2, the controller received only the page number and no search value. It then showed my whole movie list again with an empty search box. I fixed it by adding `withQueryString()` after `paginate()`, which keeps the search, filter and sort in every link.
+
+J3: A misspelled sort value does not break your page. Explain why that is worse than an error, and what your allowed list does about it.**
+
+On SQLite, a wrong sort name like `?sort=titel` gives no error, and the movies just come back in no particular order. That is worse than an error because nothing tells me something is wrong, so nobody would notice or report it. My allowed list checks the sort value against `title`, `year` and `rating`, and anything else falls back to `title`. This way my movies always come back sorted, even if the address is misspelled.
