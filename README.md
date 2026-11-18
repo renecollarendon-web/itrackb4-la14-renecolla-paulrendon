@@ -1,13 +1,25 @@
-# ITRACKB4 - LA13
+# ITRACKB4 - LA14
 
-J1: Your HomeController is not a resource controller. Name two things an index() on a resource controller does that yours does not have to.**
+F1: Authentication and authorisation are not the same. In one sentence each: what did this lesson give you, and what is still missing next meeting?
 
-The `index()` in my MovieController has to read the search, genre, featured and sort values from the request and use them to filter the movies. It also has to load the movies together with their genre and split them into pages with `paginate()`. My HomeController only shows the front page and the two counts, so it does none of these things.
+This lesson gave my movie app authentication, so it now knows who is asking through register, login and logout. What is still missing is authorisation, because any signed-in account can still add, edit and delete every movie, and next meeting we decide what each kind of user is allowed to do.
 
-J2: Your pagination links lost the search term until you added one method. Say what those links contained before, and what the controller therefore received.**
+F2: Why does a successful login call session()->regenerate()? What goes wrong if you skip it?
 
-Before the fix, the pagination links only contained `?page=2` and nothing else, so the search term was missing. When I clicked page 2, the controller received only the page number and no search value. It then showed my whole movie list again with an empty search box. I fixed it by adding `withQueryString()` after `paginate()`, which keeps the search, filter and sort in every link.
+After login, Laravel gives me a new session id and throws away the old one. If I skip it, someone who already knew my session id before I signed in would hold a signed-in session on my movie app, which is called session fixation.
 
-J3: A misspelled sort value does not break your page. Explain why that is worse than an error, and what your allowed list does about it.**
+F3: Why does a failed login use the same message for a wrong password and an unknown email?
 
-On SQLite, a wrong sort name like `?sort=titel` gives no error, and the movies just come back in no particular order. That is worse than an error because nothing tells me something is wrong, so nobody would notice or report it. My allowed list checks the sort value against `title`, `year` and `rating`, and anything else falls back to `title`. This way my movies always come back sorted, even if the address is misspelled.
+My login says "The provided credentials do not match our records" for both cases. If it said "no such email", a stranger could guess emails one by one and learn who is registered in my app, but this message tells a real user to check both fields and tells a stranger nothing.
+
+F4: Why do index and show stay public while create/edit/update/destroy use auth?
+
+My movie list is a catalogue, so visitors must be able to browse it and open a movie without an account. Only create, store, edit, update and destroy change my data, so only those five routes are behind the auth middleware.
+
+F5: You hid Add (and actions) for guests. Why is that not enough to secure those actions? What actually stops a stranger?
+
+Hiding the Add button only changes what the page shows, but the address `/movies/create` still exists and a guest can type it. What actually stops a stranger is the `auth` middleware on those routes, which sends the guest to the login page before my controller runs.
+
+F6: In screenshot 20 the route name was wrong. Why does auth middleware care that the route is named exactly login?
+
+When the auth middleware stops a guest, Laravel redirects to the route named `login`, not to a path. When I renamed my route to `signin`, Laravel could not find a route called `login`, so I got the "Route [login] not defined" error from a line I never wrote.
